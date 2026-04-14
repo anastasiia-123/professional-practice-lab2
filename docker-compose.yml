@@ -1,0 +1,33 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=ivan
+      - DB_PASSWORD=password123
+      - DB_NAME=notes_db
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - notes-net
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=ivan
+      - POSTGRES_PASSWORD=password123
+      - POSTGRES_DB=notes_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ivan -d notes_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - notes-net
+
+networks:
+  notes-net:
+    driver: bridge
